@@ -45,11 +45,12 @@ Thumbs.db
 *.bak
 *.backup
 *.tmp
+app.py.backup
 
 # Data (ChromaDB)
 data/knowledge_base/*.sqlite3
-data/knowledge_base/*/
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
+# Documentation (temporary)
+FIXES_APPLIED.md
+TESTING_GUIDE.md
+commit_script.sh
