@@ -289,6 +289,4 @@ See [LICENSE](LICENSE) file.
 ---
 
 <div align="center">
-  <strong>Made with ❤️ by Sarvagna</strong>
-</div>
-
+ 
