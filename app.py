@@ -1049,7 +1049,7 @@ with tab1:
                 genai = st.session_state.get("gemini_client")
                 if genai:
                     try:
-                        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                        model = genai.GenerativeModel('gemini-2.5-flash')
                         response = model.generate_content(user_question)
                         answer = response.text
                     except Exception as e:
@@ -1414,7 +1414,7 @@ with tab2:
                                 )
                                 
                                 try:
-                                    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                                    model = genai.GenerativeModel('gemini-1.5-flash')
                                     response = model.generate_content(prompt)
                                     ai_interpretation = response.text
                                     
