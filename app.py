@@ -1114,18 +1114,18 @@ with tab1:
                         badge_color = "#ffc107"
                     
                     st.markdown(f"""
-                    <div style="border-left: 4px solid {badge_color}; padding: 15px; background-color: #f8f9fa; border-radius: 5px; margin-top: 10px;">
+                    <div style="border-left: 4px solid {badge_color}; padding: 15px; background-color: #f8f9fa; border-radius: 5px; margin-top: 10px; color: #2E3B4E;">
                         <h4 style="margin:0; color:{badge_color};">{sig}</h4>
-                        <p><strong>Gene:</strong> {clinvar_data.get('gene_symbol', 'Unknown')}</p>
-                        <p><strong>Review Status:</strong> {clinvar_data.get('review_status', 'N/A')}</p>
-                        <p><strong>Protein Change:</strong> {clinvar_data.get('protein_change', 'N/A')}</p>
-                        <p><strong>Associated Conditions:</strong></p>
-                        <ul>
+                        <p style="color: #2E3B4E;"><strong>Gene:</strong> {clinvar_data.get('gene_symbol', 'Unknown')}</p>
+                        <p style="color: #2E3B4E;"><strong>Review Status:</strong> {clinvar_data.get('review_status', 'N/A')}</p>
+                        <p style="color: #2E3B4E;"><strong>Protein Change:</strong> {clinvar_data.get('protein_change', 'N/A')}</p>
+                        <p style="color: #2E3B4E;"><strong>Associated Conditions:</strong></p>
+                        <ul style="color: #2E3B4E;">
                     """, unsafe_allow_html=True)
                     
                     conditions = clinvar_data.get('conditions', ['None reported'])
                     for condition in conditions[:5]:  # Top 5 conditions
-                        st.markdown(f"<li>{condition}</li>", unsafe_allow_html=True)
+                        st.markdown(f"<li style='color: #2E3B4E;'>{condition}</li>", unsafe_allow_html=True)
                     
                     st.markdown("</ul></div>", unsafe_allow_html=True)
                     
@@ -1616,20 +1616,20 @@ with tab3:
                         icon = ""
                     
                     st.markdown(f"""
-                    <div style="border-left: 4px solid {badge_color}; padding: 15px; margin-bottom: 20px; background-color: #f8f9fa; border-radius: 5px;">
-                        <h4 style="margin-top:0;">{icon} Variant {idx}: {finding['variant']} in {finding['gene']} gene</h4>
-                        <p><strong>Location:</strong> {finding['location']} ({finding['ref_alt']})</p>
-                        <p><strong>Clinical Significance:</strong> <span style="color: {badge_color}; font-weight: bold;">{finding['clinical_sig']}</span></p>
-                        <p><strong>Review Status:</strong> {finding['review_status']}</p>
-                        <p><strong>Associated Conditions:</strong></p>
-                        <ul>
+                    <div style="border-left: 4px solid {badge_color}; padding: 15px; margin-bottom: 20px; background-color: #f8f9fa; border-radius: 5px; color: #2E3B4E;">
+                        <h4 style="margin-top:0; color: #2E3B4E;">{icon} Variant {idx}: {finding['variant']} in {finding['gene']} gene</h4>
+                        <p style="color: #2E3B4E;"><strong>Location:</strong> {finding['location']} ({finding['ref_alt']})</p>
+                        <p style="color: #2E3B4E;"><strong>Clinical Significance:</strong> <span style="color: {badge_color}; font-weight: bold;">{finding['clinical_sig']}</span></p>
+                        <p style="color: #2E3B4E;"><strong>Review Status:</strong> {finding['review_status']}</p>
+                        <p style="color: #2E3B4E;"><strong>Associated Conditions:</strong></p>
+                        <ul style="color: #2E3B4E;">
                     """, unsafe_allow_html=True)
                     
                     for condition in finding['conditions']:
-                        st.markdown(f"<li>{condition}</li>", unsafe_allow_html=True)
+                        st.markdown(f"<li style='color: #2E3B4E;'>{condition}</li>", unsafe_allow_html=True)
                     
                     if finding['molecular_consequence']:
-                        st.markdown(f"<p><strong>Effect on Protein:</strong> {', '.join(finding['molecular_consequence'])}</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='color: #2E3B4E;'><strong>Effect on Protein:</strong> {', '.join(finding['molecular_consequence'])}</p>", unsafe_allow_html=True)
                     
                     st.markdown("</ul></div>", unsafe_allow_html=True)
                 
