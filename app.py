@@ -1538,13 +1538,13 @@ with tab3:
         if st.button(" Analyze for Disease Associations", type="primary", use_container_width=True):
             st.markdown('<div class="section-header"> Disease Association Analysis</div>', unsafe_allow_html=True)
             
-            st.info(f"Analyzing up to 30 variants for disease associations. This may take a moment...")
+            st.info(f"Analyzing up to 20 variants for disease associations. This may take a moment...")
             
             with st.spinner("Querying genomic databases..."):
                 disease_findings = []
                 processed_count = 0
                 
-                for i, var in enumerate(variants[:30]):  # Limit to 30 to avoid rate limits
+                for i, var in enumerate(variants[:20]):  # Reduced to 20 to avoid rate limits
                     query_id = var.get("query_id")
                     if not query_id:
                         continue
@@ -1552,9 +1552,9 @@ with tab3:
                     try:
                         processed_count += 1
                         
-                        # Progress indicator
-                        if processed_count % 10 == 0:
-                            st.write(f"Processed {processed_count} variants...")
+                        # Progress indicator (every 5 variants)
+                        if processed_count % 5 == 0:
+                            st.write(f"✓ Processed {processed_count} variants... (Rate-limited to avoid API throttling)")
                         
                         # Only process rsIDs for now (most reliable)
                         if query_id.startswith('rs'):
@@ -1588,8 +1588,8 @@ with tab3:
                                             'molecular_consequence': clinvar_data.get('molecular_consequence', [])
                                         })
                         
-                        # Small delay to avoid rate limiting
-                        time.sleep(0.1)
+                        # Delay to avoid rate limiting (increased for API stability)
+                        time.sleep(0.5)
                         
                     except Exception as ex:
                         continue
