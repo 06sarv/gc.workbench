@@ -14,6 +14,7 @@ from core.api_clients import query_clingen, query_myvariant, query_vep, query_cl
 from core.disease_correlation import correlate_diseases
 from analysis.vcf_parser import VCFParser
 from analysis.variant_analyser import VariantAnalyzer, VariantDataFetcher
+from analysis.pedigree_streamlit import display_pedigree_generator
 from rag.chatbot import RAGChatbot
 from ui import styling, layout
 
@@ -944,7 +945,7 @@ if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
 # Create tabs
-tab1, tab2, tab3 = st.tabs(["AI Copilot", "Single Variant", "VCF Batch"])
+tab1, tab2, tab3, tab4 = st.tabs(["🧬 Pedigree Generator", "🤖 AI Copilot", "🔬 Single Variant", "📊 VCF Batch"])
 
 # Conditionally render sidebar based on active tab
 # The sidebar is rendered here BEFORE tab content to ensure it updates properly
@@ -1001,20 +1002,29 @@ def render_tab2_sidebar():
         </div>
         """, unsafe_allow_html=True)
 
-# --- Tab 1: RAG AI Copilot ---
+# --- Tab 1: Pedigree Generator ---
 with tab1:
     st.session_state.active_tab = 0
+    display_pedigree_generator()
+
+# --- Tab 2: RAG AI Copilot ---
+with tab2:
+    st.session_state.active_tab = 1
     st.markdown('<div class="section-header">Ask the Assistant</div>', unsafe_allow_html=True)
 
     # Initialize shared Gemini client
     if "gemini_client" not in st.session_state:
-        import google.generativeai as genai
-        api_key = os.getenv("GEMINI_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-            st.session_state["gemini_client"] = genai
-        else:
-            st.error("GEMINI_API_KEY not found in environment variables")
+        try:
+            import google.generativeai as genai
+            api_key = os.getenv("GEMINI_API_KEY")
+            if api_key:
+                genai.configure(api_key=api_key)
+                st.session_state["gemini_client"] = genai
+            else:
+                st.session_state["gemini_client"] = None
+        except ImportError:
+            st.warning("⚠️ `google-generativeai` package not installed. Install it with: `pip install google-generativeai`")
+            st.session_state["gemini_client"] = None
 
     if "rag_chatbot" not in st.session_state:
         st.session_state["rag_chatbot"] = RAGChatbot()
@@ -1045,31 +1055,43 @@ with tab1:
 
         if not classification.is_genomic:
             # General genetics question: direct Gemini response with rate limiting
+            genai = st.session_state.get("gemini_client")
+            if not genai:
+                with st.chat_message("assistant"):
+                    st.error("⚠️ **Gemini AI not available**")
+                    st.markdown("""
+                    The AI Copilot requires the `google-generativeai` package to be installed.
+                    
+                    **To fix this:**
+                    1. Install the package: `pip install google-generativeai`
+                    2. Set your `GEMINI_API_KEY` environment variable
+                    3. Restart the Streamlit app
+                    
+                    Alternatively, you can use the RAG chatbot for variant-specific questions.
+                    """)
+                st.stop()
+            
             with st.spinner("Generating response…"):
-                genai = st.session_state.get("gemini_client")
-                if genai:
-                    try:
-                        model = genai.GenerativeModel('gemini-2.5-flash')
-                        response = model.generate_content(user_question)
-                        answer = response.text
-                    except Exception as e:
-                        error_msg = str(e)
-                        if "429" in error_msg or "ResourceExhausted" in error_msg:
-                            st.error(" **Rate Limit Exceeded**")
-                            st.markdown("""
-                            The AI service is currently experiencing high demand. Please:
-                            1. Wait 30-60 seconds before trying again
-                            2. Try a more specific query to reduce processing time
-                            3. If the issue persists, check your API quota
-                            
-                            [Learn more about rate limits](https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429)
-                            """)
-                            st.stop()
-                        else:
-                            st.error(f"Error generating response: {error_msg}")
-                            st.stop()
-                else:
-                    answer = "Error: Gemini client not initialized"
+                try:
+                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    response = model.generate_content(user_question)
+                    answer = response.text
+                except Exception as e:
+                    error_msg = str(e)
+                    if "429" in error_msg or "ResourceExhausted" in error_msg:
+                        st.error(" **Rate Limit Exceeded**")
+                        st.markdown("""
+                        The AI service is currently experiencing high demand. Please:
+                        1. Wait 30-60 seconds before trying again
+                        2. Try a more specific query to reduce processing time
+                        3. If the issue persists, check your API quota
+                        
+                        [Learn more about rate limits](https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429)
+                        """)
+                        st.stop()
+                    else:
+                        st.error(f"Error generating response: {error_msg}")
+                        st.stop()
 
             with st.chat_message("assistant"):
                 st.markdown(f'<div style="color: #1e293b !important;">{answer}</div>', unsafe_allow_html=True)
@@ -1400,12 +1422,18 @@ with tab2:
                 st.markdown("###  AI-Powered Clinical Interpretation")
                 
                 if st.button("Generate AI Interpretation", type="primary", key="gen_ai_interp"):
-                    with st.spinner("Generating comprehensive interpretation..."):
-                        try:
-                            genai = st.session_state.get("gemini_client")
-                            if not genai:
-                                st.error("Gemini client not initialized. Please check your GEMINI_API_KEY environment variable.")
-                            else:
+                    genai = st.session_state.get("gemini_client")
+                    if not genai:
+                        st.error("⚠️ **Gemini AI not available**")
+                        st.markdown("""
+                        The AI Interpretation feature requires:
+                        1. Install: `pip install google-generativeai`
+                        2. Set `GEMINI_API_KEY` environment variable
+                        3. Restart the app
+                        """)
+                    else:
+                        with st.spinner("Generating comprehensive interpretation..."):
+                            try:
                                 # Build comprehensive prompt
                                 prompt = generate_summary_prompt(
                                     clingen_data, 
@@ -1446,10 +1474,10 @@ with tab2:
                                     else:
                                         raise
                                 
-                        except Exception as e:
-                            st.error(f"AI interpretation failed: {str(e)}")
-                            with st.expander("Error Details"):
-                                st.exception(e)
+                            except Exception as e:
+                                st.error(f"AI interpretation failed: {str(e)}")
+                                with st.expander("Error Details"):
+                                    st.exception(e)
         
         # Download section
         st.markdown("---")
